@@ -4,7 +4,7 @@ public class StringPrinter extends Thread{
     public StringPrinter(String[] stringToPrint){
         this.stringsToPrint = stringToPrint;
     }
-    private void sameMethod(String[] strings){
+    private synchronized void sameMethod(String[] strings){
         for(var s : strings){
             System.out.println(s);
         }
