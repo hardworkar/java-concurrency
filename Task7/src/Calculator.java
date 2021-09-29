@@ -54,7 +54,7 @@ public class Calculator {
                 e.printStackTrace();
             }
         }
-        public double getPartSum() {
+        public synchronized double getPartSum() {
             return partSum;
         }
     }
