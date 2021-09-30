@@ -38,7 +38,7 @@ public class Calculator {
         }
         @Override
         public void run() {
-            double fracIdx = idx;
+            int fracIdx = idx;
             for(; fracIdx < iterations ; fracIdx += threads){
                 double fraction;
                 if(fracIdx % 2 == 0)
