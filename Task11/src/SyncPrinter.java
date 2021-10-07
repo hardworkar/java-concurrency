@@ -22,6 +22,7 @@ class SyncPrinter {
             System.out.println(toPrint);
             /* передаем палочку */
             semaphores[(id + 1) % threads].release();
+            /* array vs arraylist, сигналы */
         }
     }
 }

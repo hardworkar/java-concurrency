@@ -1,4 +1,5 @@
 import sun.misc.Signal;
+import sun.misc.SignalHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +10,7 @@ public class Calculator {
     private final int threads;
     private final List<PartCalculator> workers;
     private final CyclicBarrier barrier;
+    private final CyclicBarrier lastBarrier;
     private long maxIteration;
 
     private void setMaxIteration(){
@@ -16,13 +18,14 @@ public class Calculator {
         System.out.println("max iter is: " + maxIteration);
     }
 
-    public Calculator(final int threads){
+    public Calculator(final int threads, CyclicBarrier lastBarrier){
         this.threads = threads;
         this.workers = new ArrayList<>(threads);
         for(int i = 0 ; i < threads ; i++){
             this.workers.add(i, new PartCalculator(i));
         }
         this.barrier = new CyclicBarrier(threads, this::setMaxIteration);
+        this.lastBarrier = lastBarrier;
     }
     public void start(){
         for(PartCalculator worker : workers){
@@ -30,23 +33,10 @@ public class Calculator {
         }
     }
 
-    private void printResult(){
+    private void interruptAll() {
         for(PartCalculator partCalculator : workers){
             partCalculator.interrupt();
         }
-
-        for(PartCalculator partCalculator : workers) {
-            try {
-                partCalculator.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        double result = workers.stream()
-            .map(PartCalculator::getPartSum)
-            .reduce(Double::sum)
-            .orElse(-1.0);
-        System.out.println("π is: " + result * 4);
     }
     class PartCalculator extends Thread{
         private double partSum = 0.0;
@@ -82,33 +72,39 @@ public class Calculator {
             for(; fracIdx <= maxIteration; fracIdx += threads){
                 partSum += (fracIdx % 2 == 0 ? 1.0 : -1.0) / (2.0 * fracIdx + 1.0);
             }
-        }
-    }
-    public static void main(String[] args){
-        int threads = Integer.parseInt(args[0]);
-        Calculator calculator = new Calculator(threads);
-
-        calculator.start();
-
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("Signal received");
-            calculator.printResult();
-        }));
-
-        /*
-        Signal.handle(new Signal("INT"), signal -> {
-            System.out.println("Signal received");
-            calculator.printResult();
-        });
-        */
-
-        new Thread(()->{
+            /* дожидаемся завершениях всех */
             try {
-                Thread.sleep(4000);
-            } catch (InterruptedException e) {
+                lastBarrier.await();
+            } catch (InterruptedException | BrokenBarrierException e) {
                 e.printStackTrace();
             }
-            Signal.raise(new Signal("INT"));
-        }).start();
+        }
+    }
+
+    /* C:\Users\miner\.jdks\openjdk-16.0.1\bin\java.exe -jar D:\nsu\java-concurrency\Task8\out\artifacts\Task8_jar\Task8.jar 3 */
+    public static void main(String[] args){
+        int threads = Integer.parseInt(args[0]);
+        CyclicBarrier finishBarrier = new CyclicBarrier(threads + 1);
+        Calculator calculator = new Calculator(threads, finishBarrier);
+
+        SignalHandler handler = sig -> {
+            System.out.println("Signal received");
+            calculator.interruptAll();
+        };
+        Signal.handle(new Signal("INT"), handler);
+
+        calculator.start();
+        try {
+            finishBarrier.await();
+            double result = calculator.workers.stream()
+                    .map(PartCalculator::getPartSum)
+                    .reduce(Double::sum)
+                    .orElse(-1.0);
+            System.out.println("pi is: " + result * 4);
+        } catch (InterruptedException | BrokenBarrierException e) {
+            e.printStackTrace();
+        }
+
+
     }
 }

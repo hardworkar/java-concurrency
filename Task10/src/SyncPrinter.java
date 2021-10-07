@@ -14,6 +14,7 @@ class SyncPrinter {
                 System.out.println(toPrint);
                 turn = (turn + 1) % threads;
                 mutex.notifyAll();
+                /* спинлоки, рекурсивлоки, интеррапты */
             }
         }
     }
