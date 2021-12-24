@@ -13,7 +13,6 @@ public class Main {
 
         Map<String, Person> persons_by_id = new HashMap<>();
         Map<String, Person> persons_by_name = new HashMap<>();
-        Set<String> known_attributes = new HashSet<>();
 
         Person currentPerson = null;
         for (; reader.hasNext(); reader.next()) {
