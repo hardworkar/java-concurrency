@@ -16,4 +16,16 @@ public class Person {
     public String get_real_property(String key){
         return get_property(key).stream().toList().get(0);
     }
+
+    @Override
+    public String toString(){
+        String info = "";
+        for(var prop : properties.keySet()){
+            info = info.concat(prop + ": ");
+            for(var m : properties.get(prop))
+               info = info.concat(m + ", ");
+            info = info.concat("; ");
+        }
+        return "#" + id + " " + firstname + " " + surname + " [" + info + "]" + " children_cnt: " + children_number + " siblings_cnt: " + siblings_number;
+    }
 }
