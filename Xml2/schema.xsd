@@ -1,0 +1,62 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:cmp="http://fit.nsu.ru/people"
+            targetNamespace="http://fit.nsu.ru/people"
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified">
+
+    <xsd:simpleType name="person-firstname-type">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="\w+"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="person-surname-type">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="\w+"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="person-gender-type">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="male"/>
+            <xsd:enumeration value="female"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="person-reference-type">
+        <xsd:attribute name="person-id" type="xsd:IDREF" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="person-type">
+        <xsd:sequence>
+            <xsd:element name="wife" minOccurs="0" maxOccurs="1" type="cmp:person-reference-type"/>
+            <xsd:element name="husband" minOccurs="0" maxOccurs="1" type="cmp:person-reference-type"/>
+            <xsd:element name="mother" minOccurs="0" maxOccurs="1" type="cmp:person-reference-type"/>
+            <xsd:element name="father" minOccurs="0" maxOccurs="1" type="cmp:person-reference-type"/>
+            <xsd:element name="sister" minOccurs="0" maxOccurs="unbounded" type="cmp:person-reference-type"/>
+            <xsd:element name="brother" minOccurs="0" maxOccurs="unbounded" type="cmp:person-reference-type"/>
+            <xsd:element name="son" minOccurs="0" maxOccurs="unbounded" type="cmp:person-reference-type"/>
+            <xsd:element name="daughter" minOccurs="0" maxOccurs="unbounded" type="cmp:person-reference-type"/>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:ID" use="required"/>
+        <xsd:attribute name="person-firstname"
+                       type="cmp:person-firstname-type"
+                       use="required"/>
+        <xsd:attribute name="person-surname"
+                       type="cmp:person-surname-type"
+                       use="required"/>
+        <xsd:attribute name="person-gender"
+                       type="cmp:person-gender-type"
+                       use="required"/>
+    </xsd:complexType>
+
+    <xsd:element name="people">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="person"
+                             type="cmp:person-type"
+                             minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>
