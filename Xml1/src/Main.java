@@ -1,14 +1,24 @@
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.PropertyException;
+import org.xml.sax.SAXException;
+import ru.nsu.fit.people.People;
+import ru.nsu.fit.people.PersonType;
+
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import javax.xml.validation.SchemaFactory;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.function.Predicate;
 
 public class Main {
-    public static void main(String[] args) throws XMLStreamException, FileNotFoundException {
+    public static void main(String[] args) throws XMLStreamException, FileNotFoundException, SAXException, JAXBException {
         ArrayList<Person> records = parseRecords();
         ArrayList<Person> tmp_records = new ArrayList<>();
 
@@ -241,6 +251,25 @@ public class Main {
         assert cnt == 0;
         assert persons_by_id.values().stream().allMatch(x -> x.properties.values().stream().allMatch(y->y.stream().allMatch(z -> z.equals("M") || z.equals("F") || z.matches("P[0-9]*"))));
         validate(persons_by_id);
+
+
+        PersonType person = new PersonType();
+        person.setId(persons_by_id.values().stream().toList().get(0).id);
+
+        People people = new People();
+        people.getPerson().add(person);
+
+
+        ClassLoader classLoader = People.class.getClassLoader();
+        JAXBContext jc = JAXBContext.newInstance("ru.nsu.fit.people", classLoader);
+
+        Marshaller writer = jc.createMarshaller();
+        SchemaFactory schemaFactory =
+                SchemaFactory.newInstance(javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        File schemaFile = new File ("schema.xsd");
+        writer.setSchema(schemaFactory.newSchema(schemaFile));
+        writer.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        writer.marshal(people, new File("output.xml"));
     }
 
     private static void validate(Map<String, Person> persons_by_id) {
