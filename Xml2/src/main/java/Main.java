@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.function.Predicate;
 
 public class Main {
-    public static void main(String[] args) throws XMLStreamException, FileNotFoundException, SAXException, JAXBException {
+    public static void main(String[] args) throws XMLStreamException, FileNotFoundException {
         ArrayList<Person> records = parseRecords();
         ArrayList<Person> tmp_records = new ArrayList<>();
 
@@ -84,8 +84,9 @@ public class Main {
         // заменим все имена родственников на айди, где это возможно
         names_to_ids(persons_by_id.values().stream().toList(), persons_by_id.values().stream().toList());
         names_to_ids(records, persons_by_id.values().stream().toList());
+
         // фильтруем людей в базе по имени и фамилии
-        // дальше мы можем их сравнивать по признакам, которые определены у всех в группе тезок
+        // дальше мы можем их сравнивать по другим признакам
         String[] heuristics = {"siblings", "husband", "wife", "parent", "daughter", "son", "mother", "father"};
         for(var e : heuristics) {
             for (Person record : records) {
@@ -308,6 +309,8 @@ public class Main {
         People people = collect_people(persons_by_id);
         write_xml(people);
         System.out.println("written successfully");
+
+
     }
     private static void write_xml(People people){
         try {
